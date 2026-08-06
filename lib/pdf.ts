@@ -92,12 +92,7 @@ export function generatePdf(doc: DocumentRecord) {
   y += 15;
 
   // Items table
-  const rows = doc.items.map((item) => [
-    item.description,
-    String(item.quantity),
-    `RM ${item.price.toFixed(2)}`,
-    `RM ${(item.quantity * item.price).toFixed(2)}`,
-  ]);
+  const rows = doc.items.map((item) => ["", String(item.quantity), `RM ${item.price.toFixed(2)}`, `RM ${(item.quantity * item.price).toFixed(2)}`]);
 
   autoTable(pdf, {
     startY: y,
@@ -105,7 +100,58 @@ export function generatePdf(doc: DocumentRecord) {
     body: rows,
     margin: { left: margin, right: margin },
     headStyles: { fillColor: BRAND_RED, textColor: 255, fontStyle: "bold" },
-    styles: { fontSize: 9, cellPadding: 6 },
+    styles: { fontSize: 9, cellPadding: 6, overflow: "linebreak", valign: "top" },
+    columnStyles: {
+      0: { cellWidth: "auto" },
+      1: { cellWidth: 60, halign: "center" },
+      2: { cellWidth: 80, halign: "right" },
+      3: { cellWidth: 90, halign: "right" },
+    },
+    didParseCell: (data) => {
+      if (data.section !== "body" || data.column.index !== 0) return;
+      const item = doc.items[data.row.index];
+      if (!item) return;
+      const maxWidth = 595 - margin * 2 - 60 - 80 - 90 - 12;
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(9);
+      const titleLines = pdf.splitTextToSize(item.title, maxWidth);
+      let lines = [...titleLines];
+      if (item.description) {
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(8);
+        lines = lines.concat(pdf.splitTextToSize(item.description, maxWidth));
+      }
+      data.cell.text = lines;
+    },
+    willDrawCell: (data) => {
+      if (data.section === "body" && data.column.index === 0) {
+        data.cell.text = [];
+      }
+    },
+    didDrawCell: (data) => {
+      if (data.section !== "body" || data.column.index !== 0) return;
+      const item = doc.items[data.row.index];
+      if (!item) return;
+      const maxWidth = 595 - margin * 2 - 60 - 80 - 90 - 12;
+      const textX = data.cell.x + data.cell.padding("left");
+      let textY = data.cell.y + data.cell.padding("top") + 3;
+
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(9);
+      pdf.setTextColor(...INK);
+      const titleLines = pdf.splitTextToSize(item.title, maxWidth);
+      pdf.text(titleLines, textX, textY);
+      textY += titleLines.length * 11;
+
+      if (item.description) {
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(8);
+        pdf.setTextColor(110, 100, 95);
+        const descLines = pdf.splitTextToSize(item.description, maxWidth);
+        pdf.text(descLines, textX, textY);
+        pdf.setTextColor(...INK);
+      }
+    },
     foot: [["", "", "GRAND TOTAL", `RM ${doc.total.toFixed(2)}`]],
     footStyles: { fillColor: [251, 243, 236], textColor: INK, fontStyle: "bold" },
   });

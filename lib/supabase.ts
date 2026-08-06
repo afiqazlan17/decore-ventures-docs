@@ -9,6 +9,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 export type DocType = "quotation" | "invoice" | "receipt";
 
 export interface DocItem {
+  title: string;
   description: string;
   quantity: number;
   price: number;
