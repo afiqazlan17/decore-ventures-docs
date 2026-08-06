@@ -36,7 +36,7 @@ export default function NewDocPage() {
   const [docDate] = useState(new Date().toISOString().slice(0, 10));
   const [validUntil, setValidUntil] = useState("");
   const [createdBy, setCreatedBy] = useState("");
-  const [items, setItems] = useState<DocItem[]>([{ description: "", quantity: 1, price: 0 }]);
+  const [items, setItems] = useState<DocItem[]>([{ title: "", description: "", quantity: 1, price: 0 }]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [linkedCustomerId, setLinkedCustomerId] = useState<string | null>(null);
@@ -62,7 +62,7 @@ export default function NewDocPage() {
         ].filter(Boolean);
         setProjectDescription(parts.join(" "));
         if (job.estimated_price) {
-          setItems([{ description: job.services?.join(", ") || "Decoration services", quantity: 1, price: Number(job.estimated_price) }]);
+          setItems([{ title: job.services?.join(", ") || "Decoration services", description: "", quantity: 1, price: Number(job.estimated_price) }]);
         }
       }
     })();
@@ -75,12 +75,12 @@ export default function NewDocPage() {
   function updateItem(index: number, field: keyof DocItem, value: string | number) {
     const next = [...items];
     // @ts-ignore
-    next[index][field] = field === "description" ? value : Number(value);
+    next[index][field] = field === "title" || field === "description" ? value : Number(value);
     setItems(next);
   }
 
   function addItem() {
-    setItems([...items, { description: "", quantity: 1, price: 0 }]);
+    setItems([...items, { title: "", description: "", quantity: 1, price: 0 }]);
   }
 
   function removeItem(index: number) {
@@ -104,8 +104,8 @@ export default function NewDocPage() {
       setError("Sila isi nama customer.");
       return;
     }
-    if (items.length === 0 || items.some((i) => !i.description.trim())) {
-      setError("Sila isi semua item description.");
+    if (items.length === 0 || items.some((i) => !i.title.trim())) {
+      setError("Sila isi tajuk untuk semua item.");
       return;
     }
     setSubmitting(true);
@@ -191,23 +191,30 @@ export default function NewDocPage() {
             <h2 className="text-sm font-semibold uppercase text-terracotta mb-3">Items</h2>
             <div className="space-y-3">
               {items.map((item, i) => (
-                <div key={i} className="grid grid-cols-12 gap-2 items-center">
+                <div key={i} className="grid grid-cols-12 gap-2 items-start border border-terracotta/10 rounded-md p-2">
                   <input
-                    className="input col-span-12 sm:col-span-6"
-                    placeholder="Description"
+                    className="input col-span-12 font-semibold"
+                    placeholder="Title *"
+                    value={item.title}
+                    onChange={(e) => updateItem(i, "title", e.target.value)}
+                  />
+                  <textarea
+                    className="input col-span-12"
+                    rows={2}
+                    placeholder="Description (optional)"
                     value={item.description}
                     onChange={(e) => updateItem(i, "description", e.target.value)}
                   />
                   <input
                     type="number"
-                    className="input col-span-4 sm:col-span-2"
+                    className="input col-span-5 sm:col-span-3"
                     placeholder="Qty"
                     value={item.quantity}
                     onChange={(e) => updateItem(i, "quantity", e.target.value)}
                   />
                   <input
                     type="number"
-                    className="input col-span-6 sm:col-span-3"
+                    className="input col-span-5 sm:col-span-3"
                     placeholder="Price (RM)"
                     value={item.price}
                     onChange={(e) => updateItem(i, "price", e.target.value)}

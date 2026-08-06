@@ -87,10 +87,10 @@ export default function DocPreview({
         </div>
       )}
 
-      <table className="w-full border-collapse mb-3 text-[12px]">
+      <table className="w-full border-collapse mb-3 text-[12px] table-fixed">
         <thead>
           <tr className="bg-terracotta text-white">
-            <th className="text-left p-1.5 font-semibold">Description</th>
+            <th className="text-left p-1.5 font-semibold w-[46%]">Description</th>
             <th className="text-center p-1.5 font-semibold w-14">Qty</th>
             <th className="text-right p-1.5 font-semibold w-20">Price</th>
             <th className="text-right p-1.5 font-semibold w-24">Total</th>
@@ -106,7 +106,10 @@ export default function DocPreview({
           )}
           {items.map((item, i) => (
             <tr key={i} className="border-b border-terracotta/10">
-              <td className="p-1.5">{item.description || <span className="opacity-30">—</span>}</td>
+              <td className="p-1.5 break-words whitespace-pre-line">
+                <div className="font-semibold">{item.title || <span className="opacity-30 font-normal">—</span>}</div>
+                {item.description && <div className="font-normal opacity-70 text-[11px] mt-0.5">{item.description}</div>}
+              </td>
               <td className="p-1.5 text-center">{item.quantity}</td>
               <td className="p-1.5 text-right">RM {Number(item.price || 0).toFixed(2)}</td>
               <td className="p-1.5 text-right">RM {(Number(item.quantity || 0) * Number(item.price || 0)).toFixed(2)}</td>
