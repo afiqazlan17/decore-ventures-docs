@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { supabase, Customer, DocItem, DocumentRecord, DocType, logActivity } from "@/lib/supabase";
+import { supabase, saveLibraryItem, Customer, DocItem, DocumentRecord, DocType, ItemLibraryEntry, logActivity } from "@/lib/supabase";
 import { generatePdf, getPdfBlob, openPdfForPrint } from "@/lib/pdf";
 import DocPreview from "@/components/DocPreview";
 import CustomerPicker from "@/components/CustomerPicker";
+import ItemPicker from "@/components/ItemPicker";
 import { STANDARD_NOTES } from "@/lib/constants";
 import { useAuth } from "@/components/AuthGate";
 
@@ -42,6 +43,7 @@ export default function NewDocPage() {
   const [error, setError] = useState("");
   const [linkedCustomerId, setLinkedCustomerId] = useState<string | null>(null);
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [itemLibrary, setItemLibrary] = useState<ItemLibraryEntry[]>([]);
 
   useEffect(() => {
     supabase
@@ -49,6 +51,10 @@ export default function NewDocPage() {
       .select("*")
       .order("created_at", { ascending: false })
       .then(({ data }) => setCustomers((data as Customer[]) || []));
+    supabase
+      .from("item_library")
+      .select("*")
+      .then(({ data }) => setItemLibrary((data as ItemLibraryEntry[]) || []));
   }, []);
 
   function applyCustomer(id: string) {
@@ -165,6 +171,8 @@ export default function NewDocPage() {
       const { error: insertErr } = await supabase.from("documents").insert(record);
       if (insertErr) throw insertErr;
 
+      items.forEach((item) => saveLibraryItem(item.title, item.description));
+
       if (jobId) {
         const nextStatus = docType === "quotation" ? "active" : docType === "invoice" ? "ongoing" : "completed";
         await supabase.from("jobs").update({ status: nextStatus }).eq("id", jobId);
@@ -247,12 +255,17 @@ export default function NewDocPage() {
             <div className="space-y-3">
               {items.map((item, i) => (
                 <div key={i} className="grid grid-cols-12 gap-2 items-start border border-terracotta/10 rounded-md p-2">
-                  <input
-                    className="input col-span-12 font-semibold"
-                    placeholder="Title *"
-                    value={item.title}
-                    onChange={(e) => updateItem(i, "title", e.target.value)}
-                  />
+                  <div className="col-span-12">
+                    <ItemPicker
+                      library={itemLibrary}
+                      value={item.title}
+                      onChangeText={(v) => updateItem(i, "title", v)}
+                      onSelect={(entry) => {
+                        updateItem(i, "title", entry.title);
+                        updateItem(i, "description", entry.description || "");
+                      }}
+                    />
+                  </div>
                   <textarea
                     className="input col-span-12"
                     rows={2}
