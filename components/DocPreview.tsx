@@ -83,7 +83,7 @@ export default function DocPreview({
       {projectDescription && (
         <div className="mb-3">
           <div className="font-semibold text-[11px]">PROJECT DESCRIPTION:</div>
-          <div>{projectDescription}</div>
+          <div className="whitespace-pre-line break-words">{projectDescription}</div>
         </div>
       )}
 
