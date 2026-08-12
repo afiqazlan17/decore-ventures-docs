@@ -198,8 +198,16 @@ function buildPdf(doc: DocumentRecord): jsPDF {
   return pdf;
 }
 
+const TITLE_CASE_LABELS: Record<string, string> = {
+  quotation: "Quotation",
+  invoice: "Invoice",
+  receipt: "Receipt",
+};
+
 function filenameFor(doc: DocumentRecord) {
-  return `${doc.doc_number}-${doc.doc_type}.pdf`;
+  const label = TITLE_CASE_LABELS[doc.doc_type] || doc.doc_type;
+  const customer = (doc.customer_name || "Customer").trim().replace(/[\\/:*?"<>|]+/g, "").replace(/\s+/g, " ");
+  return `Decore Ventures - ${label} ${doc.doc_number} - ${customer}.pdf`;
 }
 
 export function generatePdf(doc: DocumentRecord) {
