@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { supabase, DocItem, DocumentRecord, DocType, logActivity } from "@/lib/supabase";
+import { supabase, Customer, DocItem, DocumentRecord, DocType, logActivity } from "@/lib/supabase";
 import { generatePdf, getPdfBlob, openPdfForPrint } from "@/lib/pdf";
 import DocPreview from "@/components/DocPreview";
+import CustomerPicker from "@/components/CustomerPicker";
 import { STANDARD_NOTES } from "@/lib/constants";
 import { useAuth } from "@/components/AuthGate";
 
@@ -40,6 +41,25 @@ export default function NewDocPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [linkedCustomerId, setLinkedCustomerId] = useState<string | null>(null);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from("customers")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .then(({ data }) => setCustomers((data as Customer[]) || []));
+  }, []);
+
+  function applyCustomer(id: string) {
+    const c = customers.find((c) => c.id === id);
+    if (!c) return;
+    setLinkedCustomerId(id);
+    setCustomerName(c.name);
+    setCustomerCompany(c.company || "");
+    setCustomerAddress(c.address || "");
+    setCustomerPhone(c.phone || "");
+  }
 
   useEffect(() => {
     if (!jobId) return;
@@ -188,8 +208,16 @@ export default function NewDocPage() {
         <form onSubmit={(e) => { e.preventDefault(); handleAction("download"); }} className="space-y-6 bg-white p-6 rounded-lg border border-terracotta/15 shadow-sm">
           <section>
             <h2 className="text-sm font-semibold uppercase text-terracotta mb-3">Customer</h2>
+            <div className="mb-3">
+              <CustomerPicker
+                customers={customers}
+                value={linkedCustomerId || ""}
+                onChange={applyCustomer}
+                placeholder="Pick an existing customer to auto-fill (optional)..."
+              />
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <input className="input" placeholder="Customer name *" value={customerName} onChange={(e) => setCustomerName(e.target.value)} />
+              <input className="input" placeholder="Customer name *" value={customerName} onChange={(e) => { setCustomerName(e.target.value); setLinkedCustomerId(null); }} />
               <input className="input" placeholder="Company" value={customerCompany} onChange={(e) => setCustomerCompany(e.target.value)} />
               <input className="input sm:col-span-2" placeholder="Address" value={customerAddress} onChange={(e) => setCustomerAddress(e.target.value)} />
               <input className="input" placeholder="Phone" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} />
