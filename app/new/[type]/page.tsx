@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { supabase, DocItem, DocumentRecord, DocType, logActivity } from "@/lib/supabase";
-import { generatePdf } from "@/lib/pdf";
+import { generatePdf, getPdfBlob, openPdfForPrint } from "@/lib/pdf";
 import DocPreview from "@/components/DocPreview";
 import { STANDARD_NOTES } from "@/lib/constants";
 import { useAuth } from "@/components/AuthGate";
@@ -97,8 +97,14 @@ export default function NewDocPage() {
     .filter(Boolean)
     .join("\n");
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  function waLink(phone: string) {
+    const digits = phone.replace(/[^0-9]/g, "");
+    if (!digits) return null;
+    const withCountry = digits.startsWith("0") ? `60${digits.slice(1)}` : digits;
+    return `https://wa.me/${withCountry}`;
+  }
+
+  async function handleAction(action: "download" | "print" | "whatsapp") {
     setError("");
     if (!customerName.trim()) {
       setError("Sila isi nama customer.");
@@ -145,7 +151,28 @@ export default function NewDocPage() {
         await logActivity(jobId, `${LABEL[docType]} ${record.doc_number} created`, user?.name);
       }
 
-      generatePdf(record);
+      if (action === "print") {
+        openPdfForPrint(record);
+      } else if (action === "whatsapp") {
+        const { blob, filename } = getPdfBlob(record);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+        const target = window.prompt("Send to which WhatsApp number?", customerPhone || "");
+        if (target) {
+          const link = waLink(target) || "https://wa.me/";
+          window.open(
+            `${link}?text=${encodeURIComponent(`${LABEL[docType]} ${record.doc_number} — PDF telah dimuat turun, sila attach fail tersebut.`)}`,
+            "_blank"
+          );
+        }
+      } else {
+        generatePdf(record);
+      }
+
       router.push(jobId ? "/jobs" : "/history");
     } catch (err: any) {
       setError(err.message || "Something went wrong.");
@@ -158,7 +185,7 @@ export default function NewDocPage() {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
       <div>
         <h1 className="text-2xl font-bold text-terracotta mb-6">New {LABEL[docType]}</h1>
-        <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg border border-terracotta/15 shadow-sm">
+        <form onSubmit={(e) => { e.preventDefault(); handleAction("download"); }} className="space-y-6 bg-white p-6 rounded-lg border border-terracotta/15 shadow-sm">
           <section>
             <h2 className="text-sm font-semibold uppercase text-terracotta mb-3">Customer</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -239,13 +266,31 @@ export default function NewDocPage() {
 
           {error && <p className="text-sm text-red-600">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full bg-terracotta text-white py-3 rounded font-semibold hover:opacity-90 disabled:opacity-50"
-          >
-            {submitting ? "Generating..." : `Submit & Generate PDF`}
-          </button>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <button
+              type="button"
+              disabled={submitting}
+              onClick={() => handleAction("print")}
+              className="flex-1 border border-terracotta text-terracotta py-3 rounded font-semibold hover:bg-terracotta/5 disabled:opacity-50"
+            >
+              🖨 Print
+            </button>
+            <button
+              type="button"
+              disabled={submitting}
+              onClick={() => handleAction("whatsapp")}
+              className="flex-1 border border-terracotta text-terracotta py-3 rounded font-semibold hover:bg-terracotta/5 disabled:opacity-50"
+            >
+              💬 WhatsApp
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="flex-1 bg-terracotta text-white py-3 rounded font-semibold hover:opacity-90 disabled:opacity-50"
+            >
+              {submitting ? "Generating..." : "Download PDF"}
+            </button>
+          </div>
         </form>
 
         <style jsx global>{`

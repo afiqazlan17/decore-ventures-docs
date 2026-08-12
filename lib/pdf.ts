@@ -12,7 +12,7 @@ const LABELS: Record<string, string> = {
   receipt: "RECEIPT",
 };
 
-export function generatePdf(doc: DocumentRecord) {
+function buildPdf(doc: DocumentRecord): jsPDF {
   const pdf = new jsPDF({ unit: "pt", format: "a4" });
   const pageWidth = pdf.internal.pageSize.getWidth();
   const margin = 40;
@@ -195,7 +195,25 @@ export function generatePdf(doc: DocumentRecord) {
   pdf.setTextColor(120, 120, 120);
   pdf.text("Accepted by", pageWidth - margin, finalY + 28, { align: "right" });
 
-  pdf.save(`${doc.doc_number}-${doc.doc_type}.pdf`);
+  return pdf;
+}
+
+function filenameFor(doc: DocumentRecord) {
+  return `${doc.doc_number}-${doc.doc_type}.pdf`;
+}
+
+export function generatePdf(doc: DocumentRecord) {
+  buildPdf(doc).save(filenameFor(doc));
+}
+
+export function getPdfBlob(doc: DocumentRecord): { blob: Blob; filename: string } {
+  const blob = buildPdf(doc).output("blob");
+  return { blob, filename: filenameFor(doc) };
+}
+
+export function openPdfForPrint(doc: DocumentRecord) {
+  const url = buildPdf(doc).output("bloburl");
+  window.open(url, "_blank");
 }
 
 function formatDate(dateStr: string) {
