@@ -95,6 +95,34 @@ export interface ActivityLog {
   created_at?: string;
 }
 
+export interface ItemLibraryEntry {
+  id?: string;
+  title: string;
+  description?: string | null;
+  usage_count?: number;
+}
+
+// Reuses an existing item_library row (bumping its usage_count) if one
+// already matches the title case-insensitively, otherwise inserts a new
+// one — so the item picker's "most used" ordering reflects real usage.
+export async function saveLibraryItem(title: string, description: string) {
+  const name = title.trim();
+  if (!name) return;
+  const { data: existing } = await supabase
+    .from("item_library")
+    .select("id, usage_count")
+    .ilike("title", name)
+    .maybeSingle();
+  if (existing) {
+    await supabase
+      .from("item_library")
+      .update({ usage_count: (existing.usage_count || 1) + 1 })
+      .eq("id", existing.id);
+  } else {
+    await supabase.from("item_library").insert({ title: name, description: description.trim() || null });
+  }
+}
+
 export async function logActivity(jobId: string, action: string, performedBy?: string) {
   await supabase.from("job_activity_log").insert({
     job_id: jobId,
