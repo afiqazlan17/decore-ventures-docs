@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { supabase, saveLibraryItem, Customer, DocItem, DocumentRecord, DocType, ItemLibraryEntry, logActivity } from "@/lib/supabase";
+import { postLedgerEntry, BANK_ACCOUNT } from "@/lib/ledger";
 import { generatePdf, getPdfBlob, openPdfForPrint } from "@/lib/pdf";
 import DocPreview from "@/components/DocPreview";
 import CustomerPicker from "@/components/CustomerPicker";
@@ -170,6 +171,34 @@ export default function NewDocPage() {
 
       const { error: insertErr } = await supabase.from("documents").insert(record);
       if (insertErr) throw insertErr;
+
+      // Invoice recognizes revenue against the outstanding receivable;
+      // receipt clears that receivable once cash actually comes in.
+      if (docType === "invoice") {
+        await postLedgerEntry({
+          entry_date: docDate,
+          entry_type: "invoice",
+          debit_account: "ar",
+          credit_account: "revenue",
+          amount: total,
+          description: `Invoice ${record.doc_number} — ${customerName}`,
+          doc_number: record.doc_number,
+          job_id: jobId || null,
+          created_by: user?.name,
+        });
+      } else if (docType === "receipt") {
+        await postLedgerEntry({
+          entry_date: docDate,
+          entry_type: "receipt",
+          debit_account: BANK_ACCOUNT.key,
+          credit_account: "ar",
+          amount: total,
+          description: `Receipt ${record.doc_number} — ${customerName}`,
+          doc_number: record.doc_number,
+          job_id: jobId || null,
+          created_by: user?.name,
+        });
+      }
 
       items.forEach((item) => saveLibraryItem(item.title, item.description));
 
