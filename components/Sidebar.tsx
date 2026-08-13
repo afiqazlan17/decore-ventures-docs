@@ -1,19 +1,54 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import { useAuth } from "./AuthGate";
 
 const NAV = [
   { label: "Dashboard", href: "/", icon: "🏠" },
-  { label: "Create New Job", href: "/jobs/new", icon: "➕" },
-  { label: "Job Monitoring", href: "/jobs", icon: "📋" },
+  { label: "Job", href: "/jobs", icon: "📋" },
   { label: "Customers", href: "/customers", icon: "👤" },
   { label: "Vendors", href: "/vendors", icon: "🏭" },
-  { label: "Document History", href: "/history", icon: "📄" },
   { label: "Catalog", href: "/catalog", icon: "🎨" },
   { label: "Settings", href: "/settings", icon: "⚙️" },
 ];
+
+const JOB_SUBMENU = [
+  { label: "New Job", href: "/jobs/new", icon: "➕" },
+  { label: "Job Queue", view: "queue", icon: "📋" },
+  { label: "Aging Job", view: "aging", icon: "⏳" },
+  { label: "My Jobs", view: "mine", icon: "🙋" },
+];
+
+// The active sub-view comes from ?view= — isolated in its own component so
+// only this small part of the sidebar needs a Suspense boundary for
+// useSearchParams, instead of forcing every page (which all render through
+// Sidebar) to opt into dynamic rendering.
+function JobSubmenu({ onNav }: { onNav: (href: string) => void }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const activeView = searchParams.get("view") || "queue";
+
+  return (
+    <div className="ml-4 mt-1 mb-1 space-y-0.5 border-l border-terracotta/15 pl-3">
+      {JOB_SUBMENU.map((item) => {
+        const active = item.href ? pathname === item.href : pathname === "/jobs" && activeView === item.view;
+        return (
+          <button
+            key={item.label}
+            onClick={() => onNav(item.href || `/jobs?view=${item.view}`)}
+            className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs font-medium transition ${
+              active ? "bg-terracotta/10 text-terracotta font-semibold" : "text-ink/60 hover:bg-terracotta/5"
+            }`}
+          >
+            <span>{item.icon}</span>
+            {item.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -61,20 +96,27 @@ export default function Sidebar() {
 
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {NAV.map((item) => {
-            const active = pathname === item.href;
+            const isJob = item.href === "/jobs";
+            const active = isJob ? pathname.startsWith("/jobs") : pathname === item.href;
             return (
-              <button
-                key={item.href}
-                onClick={() => go(item.href)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition ${
-                  active
-                    ? "bg-terracotta text-white"
-                    : "text-ink hover:bg-terracotta/10"
-                }`}
-              >
-                <span>{item.icon}</span>
-                {item.label}
-              </button>
+              <div key={item.href}>
+                <button
+                  onClick={() => go(item.href)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition ${
+                    active
+                      ? "bg-terracotta text-white"
+                      : "text-ink hover:bg-terracotta/10"
+                  }`}
+                >
+                  <span>{item.icon}</span>
+                  {item.label}
+                </button>
+                {isJob && active && (
+                  <Suspense fallback={null}>
+                    <JobSubmenu onNav={go} />
+                  </Suspense>
+                )}
+              </div>
             );
           })}
         </nav>

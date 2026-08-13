@@ -1,13 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "@/components/AuthGate";
 import { supabase, Job, JobStatus, JOB_STATUS_LABEL, JOB_STATUS_COLOR, urgencyBadge } from "@/lib/supabase";
 
 const FILTERS: ("all" | JobStatus)[] = ["all", "potential", "active", "ongoing", "completed"];
 
-export default function JobsPage() {
+const VIEW_TITLE: Record<string, string> = {
+  queue: "Job Monitoring",
+  aging: "Aging Jobs",
+  mine: "My Jobs",
+};
+
+function JobsPageInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { user } = useAuth();
+  const view = searchParams.get("view") || "queue";
+
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | JobStatus>("all");
@@ -26,12 +37,17 @@ export default function JobsPage() {
     setLoading(false);
   }
 
-  const filtered = filter === "all" ? jobs : jobs.filter((j) => j.status === filter);
+  const viewFiltered = jobs.filter((j) => {
+    if (view === "aging") return urgencyBadge(j) !== null;
+    if (view === "mine") return j.created_by === user?.name;
+    return true;
+  });
+  const filtered = filter === "all" ? viewFiltered : viewFiltered.filter((j) => j.status === filter);
 
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-        <h1 className="text-xl sm:text-2xl font-bold text-terracotta">Job Monitoring</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-terracotta">{VIEW_TITLE[view] || "Job Monitoring"}</h1>
         <button
           onClick={() => router.push("/jobs/new")}
           className="bg-terracotta text-white px-4 py-2 rounded-md text-sm font-semibold hover:opacity-90"
@@ -85,5 +101,13 @@ export default function JobsPage() {
         })}
       </div>
     </div>
+  );
+}
+
+export default function JobsPage() {
+  return (
+    <Suspense fallback={<p className="text-sm opacity-60">Loading...</p>}>
+      <JobsPageInner />
+    </Suspense>
   );
 }
