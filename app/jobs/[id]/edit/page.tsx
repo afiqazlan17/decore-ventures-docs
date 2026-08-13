@@ -125,7 +125,7 @@ export default function EditJobPage() {
       <h1 className="text-2xl font-bold text-terracotta mb-1">Edit Job</h1>
       <p className="text-xs font-mono opacity-60 mb-6">{jobCode}</p>
 
-      <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg border border-terracotta/15 shadow-sm max-w-2xl">
+      <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg border border-terracotta/15 shadow-sm">
         <section>
           <h2 className="text-sm font-semibold uppercase text-terracotta mb-3">Status</h2>
           <div className="flex flex-wrap gap-2">
@@ -167,7 +167,7 @@ export default function EditJobPage() {
 
         <section>
           <h2 className="text-sm font-semibold uppercase text-terracotta mb-3">Event Details</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div>
               <label className="text-xs opacity-70">Event date</label>
               <input type="date" className="input w-full mt-1" value={eventDate} onChange={(e) => handleEventDateChange(e.target.value)} />

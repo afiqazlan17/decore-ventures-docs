@@ -50,11 +50,13 @@ export default function NewCustomerPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-terracotta mb-6">Add Customer</h1>
-      <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg border border-terracotta/15 shadow-sm max-w-lg">
-        <input className="input w-full" placeholder="Customer name *" value={name} onChange={(e) => setName(e.target.value)} />
-        <input className="input w-full" placeholder="Company (optional)" value={company} onChange={(e) => setCompany(e.target.value)} />
-        <input className="input w-full" placeholder="Phone number" value={phone} onChange={(e) => setPhone(e.target.value)} />
-        <input className="input w-full" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+      <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg border border-terracotta/15 shadow-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <input className="input" placeholder="Customer name *" value={name} onChange={(e) => setName(e.target.value)} />
+          <input className="input" placeholder="Company (optional)" value={company} onChange={(e) => setCompany(e.target.value)} />
+          <input className="input" placeholder="Phone number" value={phone} onChange={(e) => setPhone(e.target.value)} />
+          <input className="input" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        </div>
         <input className="input w-full" placeholder="Address" value={address} onChange={(e) => setAddress(e.target.value)} />
 
         {error && <p className="text-sm text-red-600">{error}</p>}

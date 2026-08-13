@@ -58,21 +58,21 @@ export default function NewVendorPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-terracotta mb-6">Add Vendor</h1>
-      <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg border border-terracotta/15 shadow-sm max-w-lg">
-        <input className="input w-full" placeholder="Vendor / contact name *" value={name} onChange={(e) => setName(e.target.value)} />
-        <input className="input w-full" placeholder="Company (optional)" value={company} onChange={(e) => setCompany(e.target.value)} />
-        <select className="input w-full" value={category} onChange={(e) => setCategory(e.target.value as VendorCategory)}>
-          {Object.entries(VENDOR_CATEGORY_LABEL).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg border border-terracotta/15 shadow-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <input className="input" placeholder="Vendor / contact name *" value={name} onChange={(e) => setName(e.target.value)} />
+          <input className="input" placeholder="Company (optional)" value={company} onChange={(e) => setCompany(e.target.value)} />
+          <select className="input" value={category} onChange={(e) => setCategory(e.target.value as VendorCategory)}>
+            {Object.entries(VENDOR_CATEGORY_LABEL).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <input className="input" placeholder="Phone number" value={phone} onChange={(e) => setPhone(e.target.value)} />
           <input className="input" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <input className="input" placeholder="Bank name (e.g. Maybank)" value={bankName} onChange={(e) => setBankName(e.target.value)} />
           <input className="input" placeholder="Bank account no." value={bankAccount} onChange={(e) => setBankAccount(e.target.value)} />
         </div>

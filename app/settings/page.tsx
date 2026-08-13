@@ -33,7 +33,7 @@ export default function SettingsPage() {
     <div>
       <h1 className="text-2xl font-bold text-terracotta mb-6">Settings</h1>
 
-      <div className="bg-white border border-red-200 rounded-lg p-6 max-w-lg">
+      <div className="bg-white border border-red-200 rounded-lg p-6">
         <h2 className="text-sm font-semibold uppercase text-red-600 mb-2">Danger Zone (Dev Phase)</h2>
         <p className="text-sm opacity-70 mb-4">
           Reset akan padam semua customers, jobs, quotations, invoices, dan resit dari database. Nombor dokumen (QD/ID/RD/JOB/CUST) akan mula semula dari 0001.

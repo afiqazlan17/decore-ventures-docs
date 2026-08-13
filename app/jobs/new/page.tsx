@@ -134,7 +134,7 @@ export default function NewJobPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-terracotta mb-6">Create New Job</h1>
-      <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg border border-terracotta/15 shadow-sm max-w-2xl">
+      <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg border border-terracotta/15 shadow-sm">
         <section>
           <h2 className="text-sm font-semibold uppercase text-terracotta mb-3">Customer</h2>
           <div className="flex gap-2 mb-3">
@@ -166,7 +166,7 @@ export default function NewJobPage() {
 
         <section>
           <h2 className="text-sm font-semibold uppercase text-terracotta mb-3">Packages (Catalog)</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-3">
             {CATALOG.map((item) => {
               const selected = selectedPackages.includes(item.code);
               return (
@@ -231,7 +231,7 @@ export default function NewJobPage() {
 
         <section>
           <h2 className="text-sm font-semibold uppercase text-terracotta mb-3">Event Details</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div>
               <label className="text-xs opacity-70">Event date</label>
               <input type="date" className="input w-full mt-1" value={eventDate} onChange={(e) => handleEventDateChange(e.target.value)} />
