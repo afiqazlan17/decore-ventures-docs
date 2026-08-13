@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase, Customer, SERVICE_OPTIONS, logActivity, suggestExpectedCompletion } from "@/lib/supabase";
+import { CATALOG } from "@/lib/catalog-data";
 import CustomerPicker from "@/components/CustomerPicker";
 import MoneyInput from "@/components/MoneyInput";
 import { useAuth } from "@/components/AuthGate";
@@ -17,6 +18,8 @@ export default function NewJobPage() {
   const [newName, setNewName] = useState("");
   const [newPhone, setNewPhone] = useState("");
 
+  const [selectedPackages, setSelectedPackages] = useState<string[]>([]);
+  const [brokenImg, setBrokenImg] = useState<Record<string, boolean>>({});
   const [services, setServices] = useState<string[]>([]);
   const [otherServices, setOtherServices] = useState("");
   const [eventDate, setEventDate] = useState("");
@@ -38,6 +41,17 @@ export default function NewJobPage() {
 
   function toggleService(s: string) {
     setServices((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]));
+  }
+
+  function togglePackage(code: string) {
+    setSelectedPackages((prev) => {
+      const next = prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code];
+      if (next.length > 0) {
+        const sum = CATALOG.filter((c) => next.includes(c.code)).reduce((total, c) => total + c.price, 0);
+        setEstimatedPrice(String(sum));
+      }
+      return next;
+    });
   }
 
   function handleEventDateChange(v: string) {
@@ -87,7 +101,8 @@ export default function NewJobPage() {
       });
       if (jobCodeErr) throw jobCodeErr;
 
-      const allServices = [...services, ...(otherServices.trim() ? [otherServices.trim()] : [])];
+      const packageNames = CATALOG.filter((c) => selectedPackages.includes(c.code)).map((c) => c.name);
+      const allServices = [...packageNames, ...services, ...(otherServices.trim() ? [otherServices.trim()] : [])];
 
       const { data: newJob, error: jobErr } = await supabase
         .from("jobs")
@@ -150,7 +165,54 @@ export default function NewJobPage() {
         </section>
 
         <section>
-          <h2 className="text-sm font-semibold uppercase text-terracotta mb-3">Services</h2>
+          <h2 className="text-sm font-semibold uppercase text-terracotta mb-3">Packages (Catalog)</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
+            {CATALOG.map((item) => {
+              const selected = selectedPackages.includes(item.code);
+              return (
+                <button
+                  type="button"
+                  key={item.code}
+                  onClick={() => togglePackage(item.code)}
+                  className={`text-left bg-white border rounded-lg overflow-hidden shadow-sm transition ${
+                    selected ? "border-terracotta ring-2 ring-terracotta" : "border-terracotta/15"
+                  }`}
+                >
+                  <div className="aspect-square bg-cream flex items-center justify-center overflow-hidden relative">
+                    {!brokenImg[item.code] ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-full h-full object-contain"
+                        onError={() => setBrokenImg((b) => ({ ...b, [item.code]: true }))}
+                      />
+                    ) : (
+                      <span className="text-xs opacity-40 px-4 text-center">Image coming soon</span>
+                    )}
+                    {selected && (
+                      <span className="absolute top-1.5 right-1.5 bg-terracotta text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                        ✓
+                      </span>
+                    )}
+                  </div>
+                  <div className="p-2 flex items-center justify-between text-sm">
+                    <span className="font-semibold text-terracotta">{item.name}</span>
+                    <span className="font-bold">RM {item.price}</span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+          {selectedPackages.length > 0 && (
+            <p className="text-xs opacity-60 mb-1">
+              Estimated price auto-filled from selected packages — you can still edit it below.
+            </p>
+          )}
+        </section>
+
+        <section>
+          <h2 className="text-sm font-semibold uppercase text-terracotta mb-3">Additional Services</h2>
           <div className="space-y-2 mb-3">
             {SERVICE_OPTIONS.map((s) => (
               <label key={s} className="flex items-center gap-2 text-sm">
