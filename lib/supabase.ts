@@ -1,8 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
 
-const SUPABASE_URL = "https://mxgohqlfwzfyytprgnya.supabase.co";
-const SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14Z29ocWxmd3pmeXl0cHJnbnlhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1ODk3MDYsImV4cCI6MjEwMTE2NTcwNn0.83sDGXLz04EaNveq3u-NM5UgKsGc4XgPl2Tmw4U2PEE";
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  throw new Error(
+    "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY. Copy .env.local.example to .env.local (or set them in Vercel project settings) and fill in the values."
+  );
+}
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
