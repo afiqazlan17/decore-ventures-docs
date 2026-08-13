@@ -1,22 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { AUTH_STORAGE_KEY, SHARED_PASSWORD, findStaffByEmail } from "@/lib/auth";
+import { AUTH_STORAGE_KEY, STAFF, StaffUser } from "@/lib/auth";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const staff = findStaffByEmail(email);
-    if (!staff || password !== SHARED_PASSWORD) {
-      setError("Email atau password salah.");
-      return;
-    }
+  function selectStaff(staff: StaffUser) {
     localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(staff));
     router.replace("/");
   }
@@ -25,32 +15,23 @@ export default function LoginPage() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-cream px-4 py-8">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/logo.png" alt="Decore" className="h-16 sm:h-20 w-auto mb-6" />
-      <form onSubmit={handleSubmit} className="bg-white shadow-lg rounded-xl p-6 sm:p-8 w-full max-w-sm border border-terracotta/15">
-        <h1 className="text-lg font-bold text-terracotta text-center mb-6">Staff Login</h1>
+      <div className="w-full max-w-sm">
+        <h1 className="text-lg font-bold text-terracotta text-center mb-6">Siapa awak?</h1>
         <div className="space-y-3">
-          <input
-            type="email"
-            placeholder="Email"
-            className="w-full border border-terracotta/25 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-terracotta"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            className="w-full border border-terracotta/25 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-terracotta"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          {STAFF.map((staff) => (
+            <button
+              key={staff.email}
+              onClick={() => selectStaff(staff)}
+              className="w-full bg-white border border-terracotta/15 rounded-xl px-5 py-4 flex items-center gap-3 shadow-sm hover:border-terracotta hover:bg-terracotta/5 transition"
+            >
+              <div className="w-10 h-10 rounded-full bg-terracotta/15 text-terracotta font-bold flex items-center justify-center shrink-0">
+                {staff.name.charAt(0)}
+              </div>
+              <span className="font-semibold text-ink">{staff.name}</span>
+            </button>
+          ))}
         </div>
-        {error && <p className="text-sm text-red-600 mt-3">{error}</p>}
-        <button
-          type="submit"
-          className="w-full bg-terracotta text-white py-2.5 rounded-md font-semibold mt-5 hover:opacity-90"
-        >
-          Log In
-        </button>
-      </form>
+      </div>
     </div>
   );
 }
