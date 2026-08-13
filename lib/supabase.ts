@@ -92,6 +92,32 @@ export const SERVICE_OPTIONS = [
   "Corporate Event Deco",
 ];
 
+export type VendorCategory = "decor_rental" | "printing" | "delivery" | "event_equipment" | "freelance" | "other";
+
+export const VENDOR_CATEGORY_LABEL: Record<VendorCategory, string> = {
+  decor_rental: "Decor & Rental",
+  printing: "Printing",
+  delivery: "Delivery / Logistics",
+  event_equipment: "Event & Equipment",
+  freelance: "Design / Freelance",
+  other: "Other",
+};
+
+export interface Vendor {
+  id?: string;
+  vendor_code: string;
+  name: string;
+  company?: string;
+  category: VendorCategory;
+  phone?: string;
+  email?: string;
+  bank_name?: string;
+  bank_account?: string;
+  address?: string;
+  notes?: string;
+  created_at?: string;
+}
+
 export interface ActivityLog {
   id?: string;
   job_id: string;
