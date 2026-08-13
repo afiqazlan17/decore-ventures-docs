@@ -16,7 +16,7 @@ const NAV = [
 ];
 
 const JOB_SUBMENU = [
-  { label: "New Job", href: "/jobs/new", icon: "➕" },
+  { label: "New Job", action: true, icon: "➕" },
   { label: "Job Queue", view: "queue", icon: "📋" },
   { label: "Aging Job", view: "aging", icon: "⏳" },
   { label: "My Jobs", view: "mine", icon: "🙋" },
@@ -25,8 +25,10 @@ const JOB_SUBMENU = [
 // The active sub-view comes from ?view= — isolated in its own component so
 // only this small part of the sidebar needs a Suspense boundary for
 // useSearchParams, instead of forcing every page (which all render through
-// Sidebar) to opt into dynamic rendering.
-function JobSubmenu({ onNav }: { onNav: (href: string) => void }) {
+// Sidebar) to opt into dynamic rendering. "New Job" isn't a view — it opens
+// the create-job modal directly if already on /jobs, else navigates there
+// with ?new=1 so the modal opens once the page mounts.
+function JobSubmenu({ onNav, onNewJob }: { onNav: (href: string) => void; onNewJob: () => void }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const activeView = searchParams.get("view") || "queue";
@@ -34,11 +36,11 @@ function JobSubmenu({ onNav }: { onNav: (href: string) => void }) {
   return (
     <div className="ml-4 mt-1 mb-1 space-y-0.5 border-l border-terracotta/15 pl-3">
       {JOB_SUBMENU.map((item) => {
-        const active = item.href ? pathname === item.href : pathname === "/jobs" && activeView === item.view;
+        const active = !item.action && pathname === "/jobs" && activeView === item.view;
         return (
           <button
             key={item.label}
-            onClick={() => onNav(item.href || `/jobs?view=${item.view}`)}
+            onClick={() => (item.action ? onNewJob() : onNav(`/jobs?view=${item.view}`))}
             className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs font-medium transition ${
               active ? "bg-terracotta/10 text-terracotta font-semibold" : "text-ink/60 hover:bg-terracotta/5"
             }`}
@@ -63,6 +65,15 @@ export default function Sidebar() {
   function go(href: string) {
     router.push(href);
     setOpen(false);
+  }
+
+  function handleNewJob() {
+    setOpen(false);
+    if (pathname === "/jobs") {
+      window.dispatchEvent(new CustomEvent("open-create-job"));
+    } else {
+      router.push("/jobs?new=1");
+    }
   }
 
   return (
@@ -115,7 +126,7 @@ export default function Sidebar() {
                 </button>
                 {isJob && active && (
                   <Suspense fallback={null}>
-                    <JobSubmenu onNav={go} />
+                    <JobSubmenu onNav={go} onNewJob={handleNewJob} />
                   </Suspense>
                 )}
               </div>

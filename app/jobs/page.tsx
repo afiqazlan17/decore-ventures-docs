@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/AuthGate";
 import PageHeader from "@/components/PageHeader";
+import JobFormModal from "@/components/JobFormModal";
 import { supabase, Job, JobStatus, JOB_STATUS_LABEL, JOB_STATUS_COLOR, urgencyBadge } from "@/lib/supabase";
 
 const FILTERS: ("all" | JobStatus)[] = ["all", "potential", "active", "ongoing", "completed"];
@@ -23,9 +24,16 @@ function JobsPageInner() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | JobStatus>("all");
+  const [showNew, setShowNew] = useState(searchParams.get("new") === "1");
 
   useEffect(() => {
     load();
+  }, []);
+
+  useEffect(() => {
+    const handler = () => setShowNew(true);
+    window.addEventListener("open-create-job", handler);
+    return () => window.removeEventListener("open-create-job", handler);
   }, []);
 
   async function load() {
@@ -52,7 +60,7 @@ function JobsPageInner() {
         subtitle={`${filtered.length} jobs`}
         action={
           <button
-            onClick={() => router.push("/jobs/new")}
+            onClick={() => setShowNew(true)}
             className="bg-white/15 border border-white/40 text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-white/25"
           >
             + Create New Job
@@ -104,6 +112,16 @@ function JobsPageInner() {
           );
         })}
       </div>
+
+      {showNew && (
+        <JobFormModal
+          onClose={() => setShowNew(false)}
+          onSaved={() => {
+            setShowNew(false);
+            load();
+          }}
+        />
+      )}
     </div>
   );
 }

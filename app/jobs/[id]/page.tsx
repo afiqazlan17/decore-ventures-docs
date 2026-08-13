@@ -11,6 +11,7 @@ import {
   urgencyBadge,
 } from "@/lib/supabase";
 import PageHeader from "@/components/PageHeader";
+import JobFormModal from "@/components/JobFormModal";
 
 const STEPS: { key: "quotation" | "invoice" | "receipt"; label: string }[] = [
   { key: "quotation", label: "Quotation" },
@@ -27,6 +28,7 @@ export default function JobDetailPage() {
   const [docTypes, setDocTypes] = useState<Set<string>>(new Set());
   const [log, setLog] = useState<ActivityLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showEdit, setShowEdit] = useState(false);
 
   useEffect(() => {
     load();
@@ -112,7 +114,7 @@ export default function JobDetailPage() {
 
           {/* Actions */}
           <div className="flex flex-wrap gap-2">
-            <button onClick={() => router.push(`/jobs/${job.id}/edit`)} className="text-sm bg-ink/10 text-ink px-4 py-2 rounded hover:bg-ink/20">
+            <button onClick={() => setShowEdit(true)} className="text-sm bg-ink/10 text-ink px-4 py-2 rounded hover:bg-ink/20">
               Edit Job
             </button>
             <button onClick={() => router.push(`/new/quotation?jobId=${job.id}`)} className="text-sm bg-gold/40 text-ink px-4 py-2 rounded hover:bg-gold/60">
@@ -143,6 +145,17 @@ export default function JobDetailPage() {
           </div>
         </div>
       </div>
+
+      {showEdit && (
+        <JobFormModal
+          job={job}
+          onClose={() => setShowEdit(false)}
+          onSaved={() => {
+            setShowEdit(false);
+            load();
+          }}
+        />
+      )}
     </div>
   );
 }
