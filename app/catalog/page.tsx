@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { CATALOG } from "@/lib/catalog-data";
+import PageHeader from "@/components/PageHeader";
 
 export default function CatalogPage() {
   const [broken, setBroken] = useState<Record<string, boolean>>({});
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-terracotta mb-6">Catalog</h1>
+      <PageHeader title="Catalog" subtitle={`${CATALOG.length} packages`} />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {CATALOG.map((item) => (
           <div key={item.code} className="bg-white border border-terracotta/15 rounded-xl overflow-hidden shadow-sm">

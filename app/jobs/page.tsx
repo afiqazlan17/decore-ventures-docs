@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/AuthGate";
+import PageHeader from "@/components/PageHeader";
 import { supabase, Job, JobStatus, JOB_STATUS_LABEL, JOB_STATUS_COLOR, urgencyBadge } from "@/lib/supabase";
 
 const FILTERS: ("all" | JobStatus)[] = ["all", "potential", "active", "ongoing", "completed"];
@@ -46,15 +47,18 @@ function JobsPageInner() {
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-        <h1 className="text-xl sm:text-2xl font-bold text-terracotta">{VIEW_TITLE[view] || "Job Monitoring"}</h1>
-        <button
-          onClick={() => router.push("/jobs/new")}
-          className="bg-terracotta text-white px-4 py-2 rounded-md text-sm font-semibold hover:opacity-90"
-        >
-          + Create New Job
-        </button>
-      </div>
+      <PageHeader
+        title={VIEW_TITLE[view] || "Job Monitoring"}
+        subtitle={`${filtered.length} jobs`}
+        action={
+          <button
+            onClick={() => router.push("/jobs/new")}
+            className="bg-white/15 border border-white/40 text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-white/25"
+          >
+            + Create New Job
+          </button>
+        }
+      />
 
       <div className="flex flex-wrap gap-2 mb-6">
         {FILTERS.map((f) => (

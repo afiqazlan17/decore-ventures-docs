@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import PageHeader from "@/components/PageHeader";
 
 export default function SettingsPage() {
   const [busy, setBusy] = useState(false);
@@ -31,7 +32,7 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-terracotta mb-6">Settings</h1>
+      <PageHeader title="Settings" />
 
       <div className="bg-white border border-red-200 rounded-lg p-6">
         <h2 className="text-sm font-semibold uppercase text-red-600 mb-2">Danger Zone (Dev Phase)</h2>

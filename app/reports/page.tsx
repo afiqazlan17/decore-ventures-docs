@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import * as XLSX from "xlsx";
 import { supabase, Job, JOB_STATUS_LABEL } from "@/lib/supabase";
 import { CATALOG } from "@/lib/catalog-data";
+import PageHeader from "@/components/PageHeader";
 
 const PKG_COLORS = ["#C15B42", "#D9A566", "#E8927C", "#6B9080", "#7C93C3", "#B37CC3", "#9CA3AF"];
 const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -151,15 +152,18 @@ export default function ReportsPage() {
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-terracotta">Reports</h1>
-        <button
-          onClick={handleExport}
-          className="bg-terracotta text-white px-4 py-2 rounded-md text-sm font-semibold hover:opacity-90"
-        >
-          ⬇ Export Excel
-        </button>
-      </div>
+      <PageHeader
+        title="Reports"
+        subtitle="Analysis & Export"
+        action={
+          <button
+            onClick={handleExport}
+            className="bg-white/15 border border-white/40 text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-white/25"
+          >
+            ⬇ Export Excel
+          </button>
+        }
+      />
 
       <div className="bg-white border border-terracotta/15 rounded-xl p-4 shadow-sm flex flex-wrap items-center gap-3 mb-6">
         <div className="flex items-center gap-2">

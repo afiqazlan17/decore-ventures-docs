@@ -15,6 +15,7 @@ import {
   fetchLedgerEntries,
 } from "@/lib/ledger";
 import { useAuth } from "@/components/AuthGate";
+import PageHeader from "@/components/PageHeader";
 
 const TABS = [
   { key: "overview", label: "Overview" },
@@ -76,25 +77,28 @@ export default function FinancePage() {
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-terracotta">Finance</h1>
-        <div className="flex gap-2">
-          {!hasOpeningBalance && (
+      <PageHeader
+        title="Finance"
+        subtitle={BANK_ACCOUNT.label}
+        action={
+          <div className="flex gap-2">
+            {!hasOpeningBalance && (
+              <button
+                onClick={() => setShowOpening(true)}
+                className="border border-white/40 text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-white/10"
+              >
+                Set Opening Balance
+              </button>
+            )}
             <button
-              onClick={() => setShowOpening(true)}
-              className="border border-terracotta text-terracotta px-4 py-2 rounded-md text-sm font-semibold hover:bg-terracotta/5"
+              onClick={() => setShowExpense(true)}
+              className="bg-white/15 border border-white/40 text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-white/25"
             >
-              Set Opening Balance
+              + Add Expense
             </button>
-          )}
-          <button
-            onClick={() => setShowExpense(true)}
-            className="bg-terracotta text-white px-4 py-2 rounded-md text-sm font-semibold hover:opacity-90"
-          >
-            + Add Expense
-          </button>
-        </div>
-      </div>
+          </div>
+        }
+      />
 
       <div className="flex flex-wrap gap-2 mb-6">
         {TABS.map((t) => (

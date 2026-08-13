@@ -1,15 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { supabase, Vendor, VENDOR_CATEGORY_LABEL } from "@/lib/supabase";
+import PageHeader from "@/components/PageHeader";
+import VendorFormModal from "@/components/VendorFormModal";
 
 export default function VendorsPage() {
-  const router = useRouter();
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string>("all");
+  const [showNew, setShowNew] = useState(false);
 
   useEffect(() => {
     load();
@@ -34,15 +35,18 @@ export default function VendorsPage() {
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-terracotta">Vendors</h1>
-        <button
-          onClick={() => router.push("/vendors/new")}
-          className="bg-terracotta text-white px-4 py-2 rounded-md text-sm font-semibold hover:opacity-90"
-        >
-          + Add Vendor
-        </button>
-      </div>
+      <PageHeader
+        title="Vendor Directory"
+        subtitle={`${vendors.length} vendors`}
+        action={
+          <button
+            onClick={() => setShowNew(true)}
+            className="bg-white/15 border border-white/40 text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-white/25"
+          >
+            + New Vendor
+          </button>
+        }
+      />
 
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
         <input
@@ -87,19 +91,15 @@ export default function VendorsPage() {
         ))}
       </div>
 
-      <style jsx global>{`
-        .input {
-          border: 1px solid rgba(193, 91, 66, 0.25);
-          border-radius: 6px;
-          padding: 8px 10px;
-          font-size: 14px;
-          background: white;
-        }
-        .input:focus {
-          outline: none;
-          border-color: #c15b42;
-        }
-      `}</style>
+      {showNew && (
+        <VendorFormModal
+          onClose={() => setShowNew(false)}
+          onSaved={() => {
+            setShowNew(false);
+            load();
+          }}
+        />
+      )}
     </div>
   );
 }

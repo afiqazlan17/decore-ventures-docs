@@ -10,6 +10,7 @@ import {
   JOB_STATUS_COLOR,
   urgencyBadge,
 } from "@/lib/supabase";
+import PageHeader from "@/components/PageHeader";
 
 const STEPS: { key: "quotation" | "invoice" | "receipt"; label: string }[] = [
   { key: "quotation", label: "Quotation" },
@@ -58,16 +59,18 @@ export default function JobDetailPage() {
 
   return (
     <div>
-      <div className="flex flex-wrap items-center gap-2 mb-1">
-        <span className="font-mono text-xs bg-terracotta/10 text-terracotta px-2 py-0.5 rounded font-semibold">
-          {job.job_code}
-        </span>
-        <span className={`text-xs font-semibold px-2 py-0.5 rounded ${JOB_STATUS_COLOR[job.status]}`}>
-          {JOB_STATUS_LABEL[job.status]}
-        </span>
-        {urgency && <span className={`text-xs font-semibold px-2 py-0.5 rounded ${urgency.className}`}>{urgency.label}</span>}
-      </div>
-      <h1 className="text-2xl font-bold text-terracotta mb-6">{job.customer?.name}</h1>
+      <PageHeader
+        title={job.customer?.name || "Job"}
+        subtitle={job.job_code}
+        action={
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold px-2 py-0.5 rounded bg-white/15 border border-white/30">
+              {JOB_STATUS_LABEL[job.status]}
+            </span>
+            {urgency && <span className={`text-xs font-semibold px-2 py-0.5 rounded ${urgency.className}`}>{urgency.label}</span>}
+          </div>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div className="lg:col-span-2 space-y-4">

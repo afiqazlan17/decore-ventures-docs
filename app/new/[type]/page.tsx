@@ -10,6 +10,7 @@ import CustomerPicker from "@/components/CustomerPicker";
 import ItemPicker from "@/components/ItemPicker";
 import { STANDARD_NOTES } from "@/lib/constants";
 import { useAuth } from "@/components/AuthGate";
+import PageHeader from "@/components/PageHeader";
 
 const PREFIX: Record<DocType, string> = {
   quotation: "QD",
@@ -239,9 +240,10 @@ export default function NewDocPage() {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+    <div>
+      <PageHeader title={`New ${LABEL[docType]}`} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
       <div>
-        <h1 className="text-2xl font-bold text-terracotta mb-6">New {LABEL[docType]}</h1>
         <form onSubmit={(e) => { e.preventDefault(); handleAction("download"); }} className="space-y-6 bg-white p-6 rounded-lg border border-terracotta/15 shadow-sm">
           <section>
             <h2 className="text-sm font-semibold uppercase text-terracotta mb-3">Customer</h2>
@@ -392,6 +394,7 @@ export default function NewDocPage() {
           items={items}
           notes={fullNotes}
         />
+      </div>
       </div>
     </div>
   );

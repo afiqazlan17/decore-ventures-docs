@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase, DocumentRecord } from "@/lib/supabase";
 import { generatePdf } from "@/lib/pdf";
+import PageHeader from "@/components/PageHeader";
 
 const TYPE_STYLES: Record<string, string> = {
   quotation: "bg-gold/30 text-ink",
@@ -33,19 +34,22 @@ export default function HistoryPage() {
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-terracotta">Document History</h1>
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="border border-terracotta/30 rounded px-3 py-1.5 text-sm bg-white"
-        >
-          <option value="all">All types</option>
-          <option value="quotation">Quotation</option>
-          <option value="invoice">Invoice</option>
-          <option value="receipt">Receipt</option>
-        </select>
-      </div>
+      <PageHeader
+        title="Document History"
+        subtitle={`${docs.length} documents`}
+        action={
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="border border-white/40 bg-white/15 text-white rounded px-3 py-1.5 text-sm [&>option]:text-ink"
+          >
+            <option value="all">All types</option>
+            <option value="quotation">Quotation</option>
+            <option value="invoice">Invoice</option>
+            <option value="receipt">Receipt</option>
+          </select>
+        }
+      />
 
       {loading && <p className="text-sm opacity-60">Loading...</p>}
       {!loading && filtered.length === 0 && (

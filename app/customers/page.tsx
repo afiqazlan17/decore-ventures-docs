@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { supabase, Customer } from "@/lib/supabase";
+import PageHeader from "@/components/PageHeader";
+import CustomerFormModal from "@/components/CustomerFormModal";
 
 export default function CustomersPage() {
-  const router = useRouter();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [showNew, setShowNew] = useState(false);
 
   useEffect(() => {
     load();
@@ -32,15 +33,18 @@ export default function CustomersPage() {
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-terracotta">Customers</h1>
-        <button
-          onClick={() => router.push("/customers/new")}
-          className="bg-terracotta text-white px-4 py-2 rounded-md text-sm font-semibold hover:opacity-90"
-        >
-          + Add Customer
-        </button>
-      </div>
+      <PageHeader
+        title="Customer Directory"
+        subtitle={`${customers.length} customers`}
+        action={
+          <button
+            onClick={() => setShowNew(true)}
+            className="bg-white/15 border border-white/40 text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-white/25"
+          >
+            + New Customer
+          </button>
+        }
+      />
 
       <input
         className="input w-full mb-4"
@@ -72,19 +76,15 @@ export default function CustomersPage() {
         ))}
       </div>
 
-      <style jsx global>{`
-        .input {
-          border: 1px solid rgba(193, 91, 66, 0.25);
-          border-radius: 6px;
-          padding: 8px 10px;
-          font-size: 14px;
-          background: white;
-        }
-        .input:focus {
-          outline: none;
-          border-color: #c15b42;
-        }
-      `}</style>
+      {showNew && (
+        <CustomerFormModal
+          onClose={() => setShowNew(false)}
+          onSaved={() => {
+            setShowNew(false);
+            load();
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthGate";
+import PageHeader from "@/components/PageHeader";
 import { supabase, Job, JobStatus, JOB_STATUS_LABEL, JOB_STATUS_COLOR } from "@/lib/supabase";
 import { CATALOG } from "@/lib/catalog-data";
 
@@ -150,20 +151,13 @@ export default function DashboardPage() {
 
   return (
     <div>
-      {/* Header banner */}
-      <div className="bg-gradient-to-br from-terracotta to-[#8f3f2c] text-white rounded-xl px-6 py-6 sm:px-8 sm:py-7 mb-6 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold">
-              {greeting.big}, {user?.name || "Staff"}
-            </h1>
-            <p className="text-white/80 mt-1 text-sm">{greeting.small}</p>
-          </div>
-          <span className="inline-block text-xs font-medium bg-white/15 rounded-full px-3 py-1.5 self-start">
-            Job Dashboard
-          </span>
-        </div>
-      </div>
+      <PageHeader
+        title={`${greeting.big}, ${user?.name || "Staff"}`}
+        subtitle={greeting.small}
+        action={
+          <span className="inline-block text-xs font-medium bg-white/15 rounded-full px-3 py-1.5">Job Dashboard</span>
+        }
+      />
 
       {/* Status counts */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
