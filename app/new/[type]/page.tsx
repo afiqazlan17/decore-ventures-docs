@@ -47,6 +47,7 @@ export default function NewDocPage() {
   const [linkedCustomerId, setLinkedCustomerId] = useState<string | null>(null);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [itemLibrary, setItemLibrary] = useState<ItemLibraryEntry[]>([]);
+  const [existingDocs, setExistingDocs] = useState<DocumentRecord[]>([]);
 
   useEffect(() => {
     supabase
@@ -120,8 +121,21 @@ export default function NewDocPage() {
           setItems([{ title: job.services?.join(", ") || "Decoration services", description: "", quantity: 1, price: Number(job.estimated_price) }]);
         }
       }
+
+      // Every generate action inserts a new document + posts a new ledger
+      // entry — nothing stops a repeat visit to this job from creating a
+      // duplicate. Surface what's already there so staff notice before
+      // they accidentally double up (this is what happened with Komal's
+      // job: 7 near-identical invoices, each posting revenue again).
+      const { data: existing } = await supabase
+        .from("documents")
+        .select("doc_number, doc_type, total, created_at")
+        .eq("job_id", jobId)
+        .eq("doc_type", docType)
+        .order("created_at", { ascending: false });
+      setExistingDocs((existing as DocumentRecord[]) || []);
     })();
-  }, [jobId]);
+  }, [jobId, docType]);
 
   if (!["quotation", "invoice", "receipt"].includes(docType)) {
     return <p className="text-sm text-red-600">Unknown document type.</p>;
@@ -269,6 +283,13 @@ export default function NewDocPage() {
   return (
     <div>
       <PageHeader title={`New ${LABEL[docType]}`} />
+      {existingDocs.length > 0 && (
+        <div className="bg-orange-50 border border-orange-300 text-orange-800 rounded-lg p-3 mb-4 text-sm">
+          ⚠️ Job ni dah ada {existingDocs.length} {LABEL[docType].toLowerCase()} sebelum ni:{" "}
+          {existingDocs.map((d) => `${d.doc_number} (RM ${Number(d.total).toFixed(2)})`).join(", ")}. Cipta baru akan
+          tambah rekod dokumen &amp; ledger entry lagi — pastikan ni memang perlu, bukan ulang generate yang sama.
+        </div>
+      )}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
       <div>
         <form onSubmit={(e) => { e.preventDefault(); handleAction("download"); }} className="space-y-6 bg-white p-6 rounded-lg border border-terracotta/15 shadow-sm">
