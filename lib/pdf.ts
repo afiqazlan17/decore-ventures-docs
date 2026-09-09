@@ -169,7 +169,9 @@ function buildPdf(doc: DocumentRecord): jsPDF {
   if (doc.doc_type === "quotation") {
     notes.push("Quotation Validity: 7 days from the date the document is issued.");
   }
-  if (doc.payment_terms) notes.push(`Payment Terms: ${doc.payment_terms}`);
+  // doc.notes (STANDARD_NOTES) already opens with a Payment Terms line —
+  // doc.payment_terms is the same sentence stored separately, so pushing
+  // both used to print "Payment Terms:" twice.
   if (doc.notes) notes.push(doc.notes);
 
   notes.forEach((note) => {
