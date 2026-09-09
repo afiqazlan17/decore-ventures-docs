@@ -9,6 +9,7 @@ import DocPreview from "@/components/DocPreview";
 import CustomerPicker from "@/components/CustomerPicker";
 import ItemPicker from "@/components/ItemPicker";
 import { STANDARD_NOTES } from "@/lib/constants";
+import { SERVICE_CATEGORIES } from "@/lib/service-categories";
 import { useAuth } from "@/components/AuthGate";
 import PageHeader from "@/components/PageHeader";
 
@@ -83,13 +84,39 @@ export default function NewDocPage() {
         setCustomerPhone(job.customer?.phone || "");
         setCustomerAddress(job.customer?.address || job.event_location || "");
         setLinkedCustomerId(job.customer_id || null);
+        // Group by category (e.g. "Backdrop Decoration: Pakej A, Pakej B")
+        // instead of repeating "Category: " per item like job.services does.
+        let servicesSummary = job.services?.join(", ") || "";
+        if (job.service_items?.length) {
+          const byCategory = new Map<string, string[]>();
+          job.service_items.forEach((item: any) => {
+            const label = SERVICE_CATEGORIES.find((c) => c.key === item.category)?.label || item.category;
+            byCategory.set(label, [...(byCategory.get(label) || []), item.description]);
+          });
+          servicesSummary = Array.from(byCategory.entries())
+            .map(([label, descs]) => `${label}: ${descs.join(", ")}`)
+            .join("; ");
+        }
         const parts = [
-          job.services?.length ? `Services: ${job.services.join(", ")}.` : "",
+          servicesSummary ? `Services: ${servicesSummary}.` : "",
           job.event_date ? `Event date: ${job.event_date}.` : "",
           job.event_location ? `Location: ${job.event_location}.` : "",
         ].filter(Boolean);
         setProjectDescription(parts.join(" "));
-        if (job.estimated_price) {
+        if (job.service_items?.length) {
+          // One row per service so the printed table reads as a real
+          // itemized breakdown instead of every service squashed into a
+          // single line (see JobFormModal — this is where the per-item
+          // price captured at job creation actually gets used).
+          setItems(
+            job.service_items.map((item: any) => ({
+              title: item.description,
+              description: SERVICE_CATEGORIES.find((c) => c.key === item.category)?.label || "",
+              quantity: 1,
+              price: Number(item.price) || 0,
+            }))
+          );
+        } else if (job.estimated_price) {
           setItems([{ title: job.services?.join(", ") || "Decoration services", description: "", quantity: 1, price: Number(job.estimated_price) }]);
         }
       }

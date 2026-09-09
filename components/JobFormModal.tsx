@@ -5,6 +5,7 @@ import {
   supabase,
   Customer,
   Job,
+  JobServiceItem,
   JobStatus,
   JOB_STATUS_LABEL,
   logActivity,
@@ -30,6 +31,7 @@ function blankCategoryItems(): Record<string, CategoryLineItem[]> {
 // Old jobs only have a flat services:string[] + one estimated_price total —
 // there's no per-item price to recover, so anything that isn't a known
 // Catalog package name is dropped into "Other" as a description-only line.
+// Jobs saved after service_items was added skip all this guesswork.
 function servicesToCategoryItems(services: string[]): Record<string, CategoryLineItem[]> {
   const map = blankCategoryItems();
   const packageNames = new Set(CATALOG.map((c) => c.name));
@@ -41,6 +43,14 @@ function servicesToCategoryItems(services: string[]): Record<string, CategoryLin
     } else {
       map.other.push({ description: s, price: 0 });
     }
+  });
+  return map;
+}
+
+function serviceItemsToCategoryItems(items: JobServiceItem[]): Record<string, CategoryLineItem[]> {
+  const map = blankCategoryItems();
+  items.forEach((item) => {
+    if (map[item.category]) map[item.category].push({ description: item.description, price: item.price });
   });
   return map;
 }
@@ -60,9 +70,12 @@ export default function JobFormModal({ job, onClose, onSaved }: { job?: Job; onC
     CATALOG.filter((c) => (job?.services || []).includes(c.name)).map((c) => c.code)
   );
   const [brokenImg, setBrokenImg] = useState<Record<string, boolean>>({});
-  const [categoryItems, setCategoryItems] = useState<Record<string, CategoryLineItem[]>>(() =>
-    job ? servicesToCategoryItems(job.services || []) : blankCategoryItems()
-  );
+  const [categoryItems, setCategoryItems] = useState<Record<string, CategoryLineItem[]>>(() => {
+    if (!job) return blankCategoryItems();
+    return job.service_items && job.service_items.length > 0
+      ? serviceItemsToCategoryItems(job.service_items)
+      : servicesToCategoryItems(job.services || []);
+  });
 
   const [eventDate, setEventDate] = useState(job?.event_date || "");
   const [expectedCompletionDate, setExpectedCompletionDate] = useState(job?.expected_completion_date || "");
@@ -132,6 +145,24 @@ export default function JobFormModal({ job, onClose, onSaved }: { job?: Job; onC
     return [...packageNames, ...itemStrings];
   }
 
+  // Keeps each line's real price around (services[] alone can't — it's just
+  // flat display strings) so documents generated from this job can show
+  // proper itemized rows instead of one squashed line.
+  function buildServiceItems(): JobServiceItem[] {
+    const packages: JobServiceItem[] = CATALOG.filter((c) => selectedPackages.includes(c.code)).map((c) => ({
+      category: "backdrop",
+      description: c.name,
+      price: c.price,
+    }));
+    const items: JobServiceItem[] = [];
+    SERVICE_CATEGORIES.filter((c) => !c.hasCatalog).forEach((c) => {
+      categoryItems[c.key].forEach((item) => {
+        if (item.description.trim()) items.push({ category: c.key, description: item.description.trim(), price: Number(item.price) || 0 });
+      });
+    });
+    return [...packages, ...items];
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -148,6 +179,7 @@ export default function JobFormModal({ job, onClose, onSaved }: { job?: Job; onC
     setSubmitting(true);
     try {
       const allServices = buildServices();
+      const allServiceItems = buildServiceItems();
 
       if (isEdit && job) {
         const { error: updErr } = await supabase
@@ -156,6 +188,7 @@ export default function JobFormModal({ job, onClose, onSaved }: { job?: Job; onC
             customer_id: customerId,
             status,
             services: allServices,
+            service_items: allServiceItems,
             event_date: eventDate || null,
             expected_completion_date: expectedCompletionDate || null,
             event_location: eventLocation,
@@ -201,6 +234,7 @@ export default function JobFormModal({ job, onClose, onSaved }: { job?: Job; onC
             job_code: jobCodeData as string,
             customer_id: finalCustomerId,
             services: allServices,
+            service_items: allServiceItems,
             status: "potential",
             event_date: eventDate || null,
             expected_completion_date: expectedCompletionDate || null,

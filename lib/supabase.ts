@@ -69,11 +69,18 @@ export const JOB_STATUS_COLOR: Record<JobStatus, string> = {
   completed: "bg-green-100 text-green-700",
 };
 
+export interface JobServiceItem {
+  category: string;
+  description: string;
+  price: number;
+}
+
 export interface Job {
   id?: string;
   job_code: string;
   customer_id: string;
   services: string[];
+  service_items?: JobServiceItem[];
   status: JobStatus;
   event_date?: string | null;
   expected_completion_date?: string | null;
