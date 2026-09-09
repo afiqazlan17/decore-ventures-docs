@@ -140,6 +140,17 @@ export interface ItemLibraryEntry {
   usage_count?: number;
 }
 
+// Phone numbers pasted from a phone's Contacts/Messages app often carry
+// invisible bidi direction marks (U+202A/U+202C etc.) and a non-standard
+// hyphen (‑ U+2011 instead of a plain "-") — harmless on screen, but jsPDF's
+// base14 fonts have no glyph for them and render a stray mark in the PDF.
+export function sanitizePhone(raw: string): string {
+  return raw
+    .replace(/\p{Cf}/gu, "")
+    .replace(/[‐-―−]/g, "-")
+    .trim();
+}
+
 // Reuses an existing item_library row (bumping its usage_count) if one
 // already matches the title case-insensitively, otherwise inserts a new
 // one — so the item picker's "most used" ordering reflects real usage.

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase, sanitizePhone } from "@/lib/supabase";
 import Modal from "./Modal";
 
 export default function CustomerFormModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
@@ -32,7 +32,7 @@ export default function CustomerFormModal({ onClose, onSaved }: { onClose: () =>
         customer_code: codeData as string,
         name,
         company,
-        phone,
+        phone: sanitizePhone(phone),
         email,
         address,
       });

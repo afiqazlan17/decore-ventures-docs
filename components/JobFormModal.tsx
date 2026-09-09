@@ -9,6 +9,7 @@ import {
   JobStatus,
   JOB_STATUS_LABEL,
   logActivity,
+  sanitizePhone,
   suggestExpectedCompletion,
 } from "@/lib/supabase";
 import { CATALOG } from "@/lib/catalog-data";
@@ -215,7 +216,7 @@ export default function JobFormModal({ job, onClose, onSaved }: { job?: Job; onC
 
           const { data: newCust, error: custErr } = await supabase
             .from("customers")
-            .insert({ customer_code: codeData as string, name: newName, phone: newPhone })
+            .insert({ customer_code: codeData as string, name: newName, phone: sanitizePhone(newPhone) })
             .select()
             .single();
           if (custErr) throw custErr;

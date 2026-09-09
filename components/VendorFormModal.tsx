@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { supabase, VendorCategory, VENDOR_CATEGORY_LABEL } from "@/lib/supabase";
+import { supabase, VendorCategory, VENDOR_CATEGORY_LABEL, sanitizePhone } from "@/lib/supabase";
 import Modal from "./Modal";
 
 export default function VendorFormModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
@@ -37,7 +37,7 @@ export default function VendorFormModal({ onClose, onSaved }: { onClose: () => v
         name,
         company,
         category,
-        phone,
+        phone: sanitizePhone(phone),
         email,
         bank_name: bankName,
         bank_account: bankAccount,

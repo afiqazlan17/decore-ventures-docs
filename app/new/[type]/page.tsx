@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { supabase, saveLibraryItem, Customer, DocItem, DocumentRecord, DocType, ItemLibraryEntry, logActivity } from "@/lib/supabase";
+import { supabase, saveLibraryItem, sanitizePhone, Customer, DocItem, DocumentRecord, DocType, ItemLibraryEntry, logActivity } from "@/lib/supabase";
 import { postLedgerEntry, BANK_ACCOUNT } from "@/lib/ledger";
 import { generatePdf, getPdfBlob, openPdfForPrint } from "@/lib/pdf";
 import DocPreview from "@/components/DocPreview";
@@ -185,7 +185,7 @@ export default function NewDocPage() {
         customer_name: customerName,
         customer_company: customerCompany,
         customer_address: customerAddress,
-        customer_phone: customerPhone,
+        customer_phone: sanitizePhone(customerPhone),
         project_description: projectDescription,
         items,
         subtotal: total,
